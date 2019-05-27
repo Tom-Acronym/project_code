@@ -1,2 +1,2 @@
-val2 = "hello"
-print(val2)
+val = "hello"
+print(val)
