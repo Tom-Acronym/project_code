@@ -1,2 +1,2 @@
-val = "hello"
+val = "fuck you"
 print(val)
