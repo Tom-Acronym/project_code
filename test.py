@@ -1,0 +1,2 @@
+val = "hei"
+print(val)
