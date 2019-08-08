@@ -1,2 +1,0 @@
-val = "hei"
-print(val)
