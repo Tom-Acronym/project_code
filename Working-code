@@ -1,0 +1,70 @@
+import urllib.parse
+import csv
+import urllib.request
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.ui import Select
+from selenium.webdriver.support import expected_conditions as EC
+
+usrnme = 'admin'
+psswd = 'password'
+
+browser = webdriver.Chrome()
+browser.get(('http://localhost/login.php'))
+
+username = browser.find_element_by_name('username')
+username.send_keys(usrnme)
+
+password = browser.find_element_by_name('password')
+password.send_keys(psswd)
+
+submitButton = browser.find_element_by_name('Login')
+submitButton.click()
+
+browser.get(('http://localhost/security.php'))
+security = Select(browser.find_element_by_name('security'))
+security.select_by_value('low')
+
+submitButton = browser.find_element_by_name('seclev_submit')
+submitButton.click()
+
+browser.get('http://localhost/vulnerabilities/sqli/')
+base_src = browser.page_source
+
+fields = ['payload', 'score']
+with open('scoring.csv', 'w') as f:
+    writer = csv.writer(f)
+    writer.writerow(fields)
+
+with open('testing.csv', 'r') as f:
+  reader = csv.reader(f)
+  payloads = list(reader)
+
+for line in payloads:
+
+    base_url = 'http://localhost/vulnerabilities/sqli/?id='
+    padding = '&Submit=Submit#'
+    new_payload = urllib.parse.quote(''.join(line).encode())
+
+    new_url= []
+    new_url.append(base_url)
+    new_url.append(new_payload)
+    new_url.append(padding)
+
+    new_url = ''.join(new_url)
+
+    browser.get(new_url)
+    new_src = browser.page_source
+
+    if base_src != new_src:
+        if len(base_src) > len(new_src):
+            score = len(base_src) - len(new_src)
+        else:
+            score = len(new_src) - len(base_src)
+    else:
+        score = 0
+
+    with open('scoring.csv', 'a') as f:
+        writer = csv.writer(f)
+        writer.writerow([line, score])
